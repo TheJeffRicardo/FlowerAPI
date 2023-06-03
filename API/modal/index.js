@@ -5,12 +5,12 @@ const {hash, compare, hashSync} = require('bcrypt')
 const {createToken} = require('../middleware/AuthenticatedUser')
 class User {
     login(req, res) {
-        const {emailAdd, userPass} = req.body;
+        const {email, user_password} = req.body;
         const strQry = 
         `
-        SELECT user_id, firstName, lastName, gender, cellphoneNumber, emailAdd, userPass, joinDate
+        SELECT user_id, user_name, email, user_password
         FROM users
-        WHERE emailAdd = '${emailAdd}';
+        WHERE email = '${email}';
         `
         db.query(strQry, async (err, data)=>{
             if(err) throw err;
@@ -18,14 +18,14 @@ class User {
                 res.status(401).json({err: 
                     "You provide a wrong email address"})
             }else {
-                compare(userPass,
-                    data[0].userPass, 
+                compare(user_password,
+                    data[0].user_password, 
                     (cErr, cResult)=> {
                         if(cErr) throw cErr;
                         const jwToken = 
                         createToken(
                             {
-                                emailAdd, userPass  
+                                email, user_password  
                             }
                         );
                         res.cookie('LegitUser',
@@ -51,7 +51,7 @@ class User {
     fetchUsers(req, res) {
         const strQry = 
         `
-        SELECT user_id, firstName, lastName, gender, cellphoneNumber, emailAdd, joinDate
+        SELECT user_id, user_name, email, user_password
         FROM users;
         `;
         db.query(strQry, (err, data)=>{
@@ -63,7 +63,7 @@ class User {
     fetchUser(req, res) {
         const strQry = 
         `
-        SELECT user_id, firstName, lastName, gender, cellphoneNumber, emailAdd, joinDate
+        SELECT user_id, user_name, email, user_password
         FROM users
         WHERE user_id = ?;
         `;
@@ -76,10 +76,10 @@ class User {
     }
     async createUser(req, res) {
         let detail = req.body
-        detail.userPass = await hash(detail.userPass, 15)
+        detail.user_password = await hash(detail.user_password, 15)
         let user = {
-            emailAdd: detail.emailAdd,
-            userPass: detail.userPass
+            email: detail.email,
+            user_password: detail.user_password
         }
         const strQry =
         `INSERT INTO users
@@ -99,10 +99,10 @@ class User {
     }
     updateUser(req, res) {
         let data = req.body;
-        // if(data.userPass !== null || 
-        //     data.userPass !== undefined)
-        //     console.log(data.userPass);
-        //     data.userPass = hashSync(data.userPass, 15)
+        // if(data.user_password !== null || 
+        //     data.user_password !== undefined)
+        //     console.log(data.user_password);
+        //     data.user_password = hashSync(data.user_password, 15)
         const strQry = 
         `
         UPDATE users
